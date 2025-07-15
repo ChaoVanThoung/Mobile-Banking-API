@@ -14,8 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -98,6 +99,21 @@ public class AccountServiceImpl implements AccountService {
         Account account = accountMapper.fromCreateAccountRequest(createAccountRequest);
         account.setIsDeleted(false);
         account.setCustomer(customer);
+
+        String segment = customer.getCustomerSegment().getSegment();
+
+        switch (segment.toLowerCase()) {
+            case "gold" -> account.setOverLimit(BigDecimal.valueOf(50000));
+            case "silver" -> account.setOverLimit(BigDecimal.valueOf(10000));
+            case "regular" -> account.setOverLimit(BigDecimal.valueOf(5000));
+        }
+
+        if (createAccountRequest.balance().compareTo(account.getOverLimit()) > 0 ){
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,"Initial balance exceeds overLimit for your segment"
+                );
+        }
+
         account = accountRepository.save(account);
 
 

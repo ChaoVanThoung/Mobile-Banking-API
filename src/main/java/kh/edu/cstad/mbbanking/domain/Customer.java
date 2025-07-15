@@ -36,11 +36,13 @@ public class Customer {
     @Column(nullable = false)
     private Boolean isDeleted;
 
-
     // Relationship (HAS-A)
     @OneToMany(mappedBy = "customer")
     private List<Account> accounts;
 
-    @OneToOne(mappedBy = "customer")
+    @OneToOne(mappedBy = "customer", optional = false)
     private KYC kyc;
+
+    @ManyToOne(optional = false)
+    private CustomerSegment customerSegment;
 }

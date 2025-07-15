@@ -6,6 +6,9 @@ import lombok.Builder;
 public record CustomerResponse(
         String fullName,
         String gender,
-        String phoneNumber
+        String phoneNumber,
+
+        String segment,
+        String segmentDescription
 ) {
 }

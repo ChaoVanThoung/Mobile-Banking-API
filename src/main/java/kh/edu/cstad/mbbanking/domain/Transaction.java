@@ -25,13 +25,16 @@ public class Transaction {
     @Column(columnDefinition = "TEXT")
     private String remark;
 
-    @OneToOne
+    @Column(nullable = false)
+    private Boolean isDeleted;
+
+    @ManyToOne(optional = false)
     private Account sender;
 
-    @OneToOne
+    @ManyToOne(optional = false)
     private Account receiver;
 
-    @OneToOne
+    @ManyToOne(optional = false)
     private TransactionType transactionTypes;
 
 }

@@ -12,7 +12,7 @@ import lombok.Setter;
 public class KYC {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+//    @GeneratedValue(strategy = GenerationType.UUID)
     private String uuid;
 
     @Column(unique = true, length = 12, nullable = false)
@@ -24,6 +24,6 @@ public class KYC {
     @Column(nullable = false)
     private Boolean isDeleted;
 
-    @OneToOne
+    @OneToOne(optional = false)
     private Customer customer;
 }

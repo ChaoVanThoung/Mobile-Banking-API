@@ -17,6 +17,12 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/{phoneNumber}")
+    void disableCustomerByPhoneNumber(@PathVariable String phoneNumber) {
+        customerService.disableCustomerByPhoneNumber(phoneNumber);
+    }
+
     @PatchMapping("/{phoneNumber}")
     CustomerResponse updateCustomer(@PathVariable String phoneNumber,
                                     @RequestBody UpdateCustomerRequest updateCustomerRequest) {

@@ -12,5 +12,7 @@ public interface CustomerService {
     CustomerResponse findByPhoneNumber(String phoneNumber);
     List<CustomerResponse> getAllCustomers();
     CustomerResponse createNew(CreateCustomerRequest createCustomerRequest);
+    void disableCustomerByPhoneNumber(String phoneNumber);
+
 
 }
