@@ -25,6 +25,9 @@ public class Transaction {
     @Column(columnDefinition = "TEXT")
     private String remark;
 
+    @Column(nullable = false, length = 25)
+    private String status;
+
     @Column(nullable = false)
     private Boolean isDeleted;
 

@@ -16,10 +16,11 @@ public class KYCServiceImpl implements KYCService {
 
     @Transactional
     @Override
-    public void verifyByUuid(String uuid) {
-        if (!kyCRepository.existsByUuid(uuid)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "KYC UUID Not Found");
+    public void verifyByNationalCardId(String nationalCardId) {
+        if (!kyCRepository.existsByNationalCardId(nationalCardId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "NationalCardId not found");
         }
-        kyCRepository.verifyByUuid(uuid);
+        kyCRepository.verifyByNationalCardId(nationalCardId);
     }
+
 }

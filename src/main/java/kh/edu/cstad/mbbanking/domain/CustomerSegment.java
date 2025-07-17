@@ -19,9 +19,13 @@ public class CustomerSegment {
 
     @Column(nullable = false, unique = true, length = 100)
     private String segment;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(nullable = false)
     private Boolean isDeleted;
 
-    @OneToMany(mappedBy = "customerSegment")
+    @OneToMany(mappedBy = "customerSegment", fetch = FetchType.EAGER)
     private List<Customer> customers;
 }

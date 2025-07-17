@@ -12,8 +12,8 @@ public class KYCController {
     private final KYCService kyCService;
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PutMapping("/{uuid}")
-    void verifyByUuid(@PathVariable String uuid){
-        kyCService.verifyByUuid(uuid);
+    @PutMapping("/{nationalCardId}")
+    void verifyByNationalCardId(@PathVariable String nationalCardId){
+        kyCService.verifyByNationalCardId(nationalCardId);
     }
 }

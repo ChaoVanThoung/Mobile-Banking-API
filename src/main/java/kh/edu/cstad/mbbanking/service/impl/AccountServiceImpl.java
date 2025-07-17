@@ -1,14 +1,17 @@
 package kh.edu.cstad.mbbanking.service.impl;
 
 import kh.edu.cstad.mbbanking.domain.Account;
+import kh.edu.cstad.mbbanking.domain.AccountType;
 import kh.edu.cstad.mbbanking.domain.Customer;
 import kh.edu.cstad.mbbanking.dto.account.AccountResponse;
 import kh.edu.cstad.mbbanking.dto.account.CreateAccountRequest;
 import kh.edu.cstad.mbbanking.dto.account.UpdateAccountRequest;
 import kh.edu.cstad.mbbanking.mapper.AccountMapper;
 import kh.edu.cstad.mbbanking.repository.AccountRepository;
+import kh.edu.cstad.mbbanking.repository.AccountTypeRepository;
 import kh.edu.cstad.mbbanking.repository.CustomerRepository;
 import kh.edu.cstad.mbbanking.service.AccountService;
+import kh.edu.cstad.mbbanking.util.CurrencyUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
 
 @Service
@@ -25,6 +30,7 @@ public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
     private final CustomerRepository customerRepository;
+    private final AccountTypeRepository accountTypeRepository;
 
     @Override
     public void disableAccountByActNo(String actNo) {
@@ -87,32 +93,78 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountResponse createAccount(CreateAccountRequest createAccountRequest) {
 
-        // Validation actNo
-        if (accountRepository.existsByActNo(createAccountRequest.actNo())){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "ActNo already exists");
+        Account account = new Account();
+
+        // validation accountType
+        AccountType accountType = accountTypeRepository.findByType(createAccountRequest.accountType()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "account type not found")
+        );
+
+        // validation Phone Number
+        Customer customer = customerRepository.findByPhoneNumber(createAccountRequest.phoneNumber()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "customer phone number not found")
+        );
+
+        switch (createAccountRequest.actCurrency()){
+            case CurrencyUtil.USD -> {
+                if (createAccountRequest.balance().compareTo(BigDecimal.TEN) < 0){
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,"Balance must be greater than or equal to 10"
+                    );
+                }
+
+                // set over limit base on customer segment
+                if (customer.getCustomerSegment().getSegment().equals("REGULAR")){
+                    account.setOverLimit(BigDecimal.valueOf(5000));
+                } else if (customer.getCustomerSegment().getSegment().equals("SILVER")){
+                    account.setOverLimit(BigDecimal.valueOf(10000));
+                } else {
+                    account.setOverLimit(BigDecimal.valueOf(50000));
+                }
+            }
+            case CurrencyUtil.KHR -> {
+                if (createAccountRequest.balance().compareTo(BigDecimal.valueOf(40000)) < 0){
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,"Balance must be greater than or equal to 10"
+                    );
+                }
+
+                // set over limit base on customer segment
+                if (customer.getCustomerSegment().getSegment().equals("REGULAR")){
+                    account.setOverLimit(BigDecimal.valueOf(5000 * 4000));
+                } else if (customer.getCustomerSegment().getSegment().equals("SILVER")){
+                    account.setOverLimit(BigDecimal.valueOf(10000 * 4000));
+                } else {
+                    account.setOverLimit(BigDecimal.valueOf(50000 * 4000));
+                }
+            }
+            default -> throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,"Currency is not support"
+            );
         }
-        // Validation customer id
-        Customer customer = customerRepository.findById(createAccountRequest.custId())
-                .orElseThrow(
-                        ()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found")
-                );
-        Account account = accountMapper.fromCreateAccountRequest(createAccountRequest);
+
+        // validation account no
+        if (createAccountRequest.actNo() != null){
+            if (accountRepository.existsByActNo(createAccountRequest.actNo())){
+                throw new ResponseStatusException(HttpStatus.CONFLICT,"account no already exists");
+            }
+            account.setActNo(createAccountRequest.actNo());
+        } else {
+            String actNo;
+            do{
+                actNo = String.format("%09d",new Random().nextInt(1_000_000_000));
+            } while (accountRepository.existsByActNo(actNo));
+            account.setActNo(actNo);
+        }
+
+        // set data logic
+        account.setActName(createAccountRequest.actName());
+        account.setActCurrency(createAccountRequest.actCurrency().name());
+        account.setBalance(createAccountRequest.balance());
+        account.setIsHide(false);
         account.setIsDeleted(false);
+        account.setAccountType(accountType);
         account.setCustomer(customer);
-
-        String segment = customer.getCustomerSegment().getSegment();
-
-        switch (segment.toLowerCase()) {
-            case "gold" -> account.setOverLimit(BigDecimal.valueOf(50000));
-            case "silver" -> account.setOverLimit(BigDecimal.valueOf(10000));
-            case "regular" -> account.setOverLimit(BigDecimal.valueOf(5000));
-        }
-
-        if (createAccountRequest.balance().compareTo(account.getOverLimit()) > 0 ){
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,"Initial balance exceeds overLimit for your segment"
-                );
-        }
 
         account = accountRepository.save(account);
 

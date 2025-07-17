@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "account_type")
+@Table(name = "account_types")
 public class AccountType {
 
     @Id
@@ -24,6 +24,6 @@ public class AccountType {
     @Column(nullable = false)
     private Boolean isDeleted;
 
-//    @OneToMany(mappedBy = "accountTypes")
-//    private List<Account> accounts;
+    @OneToMany(mappedBy = "accountType")
+    private List<Account> accounts;
 }

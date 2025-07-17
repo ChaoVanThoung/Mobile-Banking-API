@@ -59,32 +59,39 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponse createNew(CreateCustomerRequest createCustomerRequest) {
 
+        // validation email
         if (customerRepository.existsByEmail(createCustomerRequest.email())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
 
+        // validation phone number
         if (customerRepository.existsByPhoneNumber(createCustomerRequest.phoneNumber())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Phone number already exists");
         }
 
+        // validation national cart id
         if (kycRepository.existsByNationalCardId(createCustomerRequest.nationalCardId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "National card id already exists");
         }
 
-        CustomerSegment customerSegment = customerSegmentRepository.findBySegment(createCustomerRequest.segment())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Segment not found"));
+        // validation segment
+        CustomerSegment customerSegment = customerSegmentRepository.findBySegment(createCustomerRequest.customerSegment()).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer Segment not found")
+        );
+
         Customer customer = customerMapper.fromCustomerRequest(createCustomerRequest);
         customer.setIsDeleted(false);
         customer.setCustomerSegment(customerSegment);
-        customer = customerRepository.save(customer);
+
+        // prepare KYC of customer
         KYC kyc = new KYC();
         kyc.setCustomer(customer);
-        kyc.setUuid(UUID.randomUUID().toString());
         kyc.setNationalCardId(createCustomerRequest.nationalCardId());
         kyc.setIsVerified(false);
         kyc.setIsDeleted(false);
-        kycRepository.save(kyc);
+        customer.setKyc(kyc);
 
+        customer = customerRepository.save(customer);
         return customerMapper.toCustomerResponse(customer);
     }
 

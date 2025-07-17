@@ -2,6 +2,6 @@ package kh.edu.cstad.mbbanking.service;
 
 public interface KYCService {
 
-    void verifyByUuid(String uuid);
+    void verifyByNationalCardId(String nationalCardId);
 
 }

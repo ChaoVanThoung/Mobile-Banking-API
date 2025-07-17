@@ -12,11 +12,11 @@ public interface KYCRepository extends JpaRepository<KYC,String> {
     @Query(value = """
             UPDATE KYC as k
             SET k.isVerified = TRUE
-            WHERE k.uuid=?1
+            WHERE k.nationalCardId=?1
             """)
-    void verifyByUuid(String uuid);
+    void verifyByNationalCardId(String nationalCardId);
 
-    Boolean existsByUuid(String uuid);
+
 
     Boolean existsByNationalCardId(String nationalCardId);
 }
