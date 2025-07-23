@@ -1,8 +1,6 @@
 package kh.edu.cstad.mbbanking.mapper;
 
 import kh.edu.cstad.mbbanking.domain.Customer;
-import kh.edu.cstad.mbbanking.domain.CustomerSegment;
-import kh.edu.cstad.mbbanking.domain.KYC;
 import kh.edu.cstad.mbbanking.dto.CreateCustomerRequest;
 import kh.edu.cstad.mbbanking.dto.CustomerResponse;
 import kh.edu.cstad.mbbanking.dto.UpdateCustomerRequest;
